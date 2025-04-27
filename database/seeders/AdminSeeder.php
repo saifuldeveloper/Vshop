@@ -17,8 +17,8 @@ class AdminSeeder extends Seeder
         User::create([
             'name'=>'Admin',
             'email'=>'admin@vshop.com',
-            'password'=>Hash::make('password'),
-            'isAdmin'=>1
+            'password'=>Hash::make('12345678'),
+            'is_admin'=>1
         ]);
     }
 }
