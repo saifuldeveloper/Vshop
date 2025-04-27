@@ -19,8 +19,8 @@ import Sidebar from './Sidebar.vue'
 
         <!----main Section Start-->
 
-        <slot />
-
-        <!-- Main Section End -->
+        <main class="p-4 md:ml-64 h-auto pt-20">
+            <slot />
+        </main>
     </div>
 </template>
