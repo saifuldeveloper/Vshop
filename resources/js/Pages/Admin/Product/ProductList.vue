@@ -2,28 +2,55 @@
 
 import { router, usePage } from '@inertiajs/vue3'
 import { ref } from 'vue';
+import { ElMessageBox } from 'element-plus'
+import { Plus, ZoomIn, Delete, Download, Edit } from '@element-plus/icons-vue'
 
-const products = usePage().props.products;
+defineProps({
+    products: Array
+})
 const categories = usePage().props.categories;
 const brands = usePage().props.brands;
 
 const isAddProduct = ref(false);
-const dialogVisible = ref(false);
 const editMode = ref(false);
 
+//upload mulitpel images;
+const productImages = ref([]);
+const dialogImageUrl = ref('');
+const disabled = ref(false);
+const dialogVisible = ref(false)
+
+const handleDownload = (file) => {
+    const link = document.createElement('a')
+    link.href = file.url
+    link.download = file.name || 'download'
+    link.click()
+}
+
+const handleRemove = (file) => {
+    const index = productImages.value.indexOf(file)
+    if (index !== -1) {
+        productImages.value.splice(index, 1)
+    }
+}
 // product form data 
 
 const id = ref('');
-const title = ref('');
-const price = ref('');
-const quantity = ref('');
-const description = ref('');
-const category_id = ref('');
-const brand_id = ref('');
-const product_images = ref([]);
-const dialogProductVisible = ref(false);
-const published = ref(false);
-const inStock = ref(false);
+const title = ref('')
+const price = ref('')
+const quantity = ref('')
+const description = ref('')
+const product_images = ref([])
+const published = ref('')
+const category_id = ref('')
+const brand_id = ref('')
+const inStock = ref('')
+
+for (const image of productImages.value) {
+    formData.append('product_images[]', image.raw);
+}
+
+
 
 const openAddModal = () => {
     isAddProduct.value = true;
@@ -32,10 +59,24 @@ const openAddModal = () => {
 }
 
 
+//rest data after added
+
+
 const openEditModal = (product) => {
     isAddProduct.value = false;
     dialogVisible.value = true;
     editMode.value = true;
+
+    // update data
+    id.value = product.id;
+    title.value = product.title;
+    price.value = product.price;
+    quantity.value = product.quantity;
+    description.value = product.description;
+    brand_id.value = product.brand_id;
+    category_id.value = product.category_id;
+    product_images.value = product.product_images;
+
 }
 
 
@@ -47,14 +88,11 @@ const AddProduct = async () => {
     formData.append('price', price.value);
     formData.append('quantity', quantity.value);
     formData.append('description', description.value);
-    formData.append('category_id', category_id.value);
     formData.append('brand_id', brand_id.value);
-    formData.append('product_images', product_images.value);
-    formData.append('published', published.value);
-    formData.append('inStock', inStock.value);
-
-    for (const image of product_images.value) {
-        formData.append('product_images[]', image.row);
+    formData.append('category_id', category_id.value);
+    // Append product images to the FormData
+    for (const image of productImages.value) {
+        formData.append('product_images[]', image.raw);
     }
 
     try {
@@ -68,12 +106,119 @@ const AddProduct = async () => {
                     title: page.props.flash.success
                 })
                 dialogVisible.value = false;
-                
+                resetFormData();
+
             }
         });
     } catch (error) {
         console.error('Error adding product:', error);
     }
+}
+
+
+
+
+const resetFormData = () => {
+    id.value = '';
+    title.value = '';
+    price.value = '';
+    quantity.value = '';
+    description.value = '';
+    productImages.value = [];
+    dialogImageUrl.value = ''
+};
+
+
+//delete sigal product image 
+
+const deleteImage = async (pimage, index) => {
+    try {
+        await router.delete('/admin/products/image/' + pimage.id, {
+            onSuccess: (page) => {
+                product_images.value.splice(index, 1);
+                Swal.fire({
+                    toast: true,
+                    icon: "success",
+                    position: "top-end",
+                    showConfirmButton: false,
+                    title: page.props.flash.success
+                });
+            }
+        })
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+
+//update product method
+const updateProduct = async () => {
+    const formData = new FormData();
+    formData.append('title', title.value);
+    formData.append('price', price.value);
+    formData.append('quantity', quantity.value);
+    formData.append('description', description.value);
+    formData.append('category_id', category_id.value);
+    formData.append('brand_id', brand_id.value);
+    formData.append("_method", 'PUT');
+    // Append product images to the FormData
+    for (const image of productImages.value) {
+        formData.append('product_images[]', image.raw);
+    }
+
+    try {
+        await router.post('products/update/' + id.value, formData, {
+            onSuccess: (page) => {
+                dialogVisible.value = false;
+                resetFormData();
+                Swal.fire({
+                    toast: true,
+                    icon: "success",
+                    position: "top-end",
+                    showConfirmButton: false,
+                    title: page.props.flash.success
+                });
+            }
+        })
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+
+
+//delete product method 
+const deleteProduct = (product, index) => {
+    Swal.fire({
+        title: 'Are you Sure',
+        text: "This actions cannot undo!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'no',
+        confirmButtonText: 'yes, delete!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            try {
+                router.delete('products/destory/' + product.id, {
+                    onSuccess: (page) => {
+                        this.delete(product, index);
+                        Swal.fire({
+                            toast: true,
+                            icon: "success",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            title: page.props.flash.success
+                        });
+                    }
+                })
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    })
+
 }
 
 
@@ -85,7 +230,8 @@ const AddProduct = async () => {
 
     <!--Dialog for adding product or editing product-->
 
-    <el-dialog v-model="dialogVisible" title="Product" width="500" :before-close="handleClose">
+    <el-dialog v-model="dialogVisible" :title="editMode ? 'Edit product' : 'Add Product'" width="500"
+        :before-close="handleClose">
         <form @submit.prevent="editMode ? updateProduct() : AddProduct()">
             <div class="relative z-0 w-full mb-6 group">
                 <input v-model="title" type="text" name="floating_title" id="floating_title"
@@ -132,23 +278,60 @@ const AddProduct = async () => {
             </div>
 
 
-            <div class="grid  md:gap-6">
+            <div class="grid md:gap-6">
                 <div class="relative z-0 w-full mb-6 group">
+                    <el-upload action="#" list-type="picture-card" :auto-upload="false"
+                        v-model:file-list="productImages" :on-preview="handlePictureCardPreview"
+                        :on-remove="handleRemove" multiple>
+                        <el-icon>
+                            <Plus />
+                        </el-icon>
 
-                    <label for="message"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                    <textarea id="message" rows="4" v-model="description"
-                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-gray-500 focus:border-gray-500 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-dark dark:focus:ring-gray-500 dark:focus:border-gray-500"
-                        placeholder="Leave a comment..."></textarea>
-
+                        <template #file="{ file }">
+                            <img class="el-upload-list__item-thumbnail" :src="file.url || URL.createObjectURL(file.raw)"
+                                alt="Uploaded Image" />
+                            <span class="el-upload-list__item-actions">
+                                <span class="el-upload-list__item-delete" @click="handleDownload(file)">
+                                    <el-icon>
+                                        <Download />
+                                    </el-icon>
+                                </span>
+                                <span class="el-upload-list__item-delete" @click="handleRemove(file)">
+                                    <el-icon>
+                                        <Delete />
+                                    </el-icon>
+                                </span>
+                            </span>
+                        </template>
+                    </el-upload>
                 </div>
-
             </div>
 
+            <!-- list of images for selected product -->
+            <div class="flex flex-nowrap mb-8 ">
+                <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative w-32 h-32 ">
+                    <img class="w-24 h-20 rounded" :src="`/${pimage.image}`" alt="">
+                    <span
+                        class="absolute top-0 right-8 transform -translate-y-1/2 w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
+                        <span @click="deleteImage(pimage, index)"
+                            class="text-white text-xs font-bold absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">x</span>
+                    </span>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
             <button type="submit"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-            
-            
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+
+
         </form>
     </el-dialog>
 
@@ -298,41 +481,41 @@ const AddProduct = async () => {
                                     class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ product.title }}
                                 </th>
-                                <td class="px-4 py-3">{{ product.category_id }}</td>
-                                <td class="px-4 py-3">{{ product.brand_id }}</td>
+                                <td class="px-4 py-3">{{ product.category.name }}</td>
+                                <td class="px-4 py-3">{{ product.brand.name }}</td>
                                 <td class="px-4 py-3">{{ product.quantity }}</td>
                                 <td class="px-4 py-3">${{ product.price }}</td>
-                                <td class="px-4 py-3">${{ product.inStock }}</td>
-                                <td class="px-4 py-3">${{ product.published }}</td>
+                                <td class="px-4 py-3">
+                                    <span v-if="product.inStock == 0"
+                                        class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">inStock</span>
+                                    <span v-else
+                                        class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Out
+                                        of Stock</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <button v-if="product.published == 0" type="button"
+                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Published</button>
+                                    <button v-else type="button"
+                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">UnPublished</button>
+
+                                </td>
                                 <td class="px-4 py-3 flex items-center justify-end">
-                                    <button id="apple-imac-27-dropdown-button"
-                                        data-dropdown-toggle="apple-imac-27-dropdown"
-                                        class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-                                        type="button">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        </svg>
-                                    </button>
-                                    <div id="apple-imac-27-dropdown"
-                                        class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                            aria-labelledby="apple-imac-27-dropdown-button">
-                                            <li>
-                                                <a href="#"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
-                                            </li>
-                                            <li>
-                                                <a href="#"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
-                                            </li>
-                                        </ul>
-                                        <div class="py-1">
-                                            <a href="#"
-                                                class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
-                                        </div>
-                                    </div>
+
+
+                                    <el-button @click="deleteProduct(product, index)">
+                                        <el-icon>
+                                            <Delete />
+                                        </el-icon>
+                                    </el-button>
+
+                                    <el-button @click="openEditModal(product)">
+                                        <el-icon>
+                                            <Edit />
+                                        </el-icon>
+                                    </el-button>
+
+
+
                                 </td>
                             </tr>
 
