@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Frontend\CartController;
+use App\Http\Controllers\Frontend\ProductListController;
 use App\Http\Controllers\Frontend\UserController;
 use App\Http\Controllers\ProfileController;
 use GuzzleHttp\Middleware;
@@ -41,6 +42,15 @@ Route::prefix('cart')->controller(CartController::class)->group(function () {
     Route::post('store/{product}','store')->name('cart.store');
     Route::patch('update/{product}','update')->name('cart.update');
     Route::delete('delete/{product}','delete')->name('cart.delete');
+});
+
+
+
+
+//routes for products list and filter 
+Route::prefix('products')->controller(ProductListController::class)->group(function ()  {
+    Route::get('/','index')->name('products.index');
+    
 });
 
 //==========Admin Route start==========
