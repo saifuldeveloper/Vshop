@@ -6,7 +6,7 @@ use App\Http\Resources\CartResource;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Helper\Cart;
-
+use Illuminate\Foundation\Application;
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -44,6 +44,10 @@ class HandleInertiaRequests extends Middleware
                 'warning' => fn () => $request->session()->get('warning'),
                 'info' => fn () => $request->session()->get('info'),
             ],
+            'canLogin' => app('router')->has('login'),
+            'canRegister' => app('router')->has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
             
         ];
     }

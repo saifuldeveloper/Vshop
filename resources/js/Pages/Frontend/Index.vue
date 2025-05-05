@@ -7,9 +7,10 @@ defineProps({
 
 })
 
+
 const addToCart = (product) => {
-    console.log(product)
-    router.post(route('cart.store', product), {
+    router.post(route('cart.store', product), {}, {
+        preserveScroll: true,
         onSuccess: (page) => {
             if (page.props.flash.success) {
                 Swal.fire({
@@ -17,11 +18,12 @@ const addToCart = (product) => {
                     icon: "success",
                     position: "top-end",
                     showConfirmButton: false,
-                    title: page.props.flash.successC
+                    timer: 3000,
+                    title: page.props.flash.success
                 });
             }
         },
-    })
+    });
 }
 
 
@@ -36,8 +38,8 @@ const addToCart = (product) => {
         <div class="bg-white">
             <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900">Latest Product list</h2>
+               
                 <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-
                     <div v-for="product in products" :key="product.id" class="group relative">
 
                         <div
@@ -55,7 +57,7 @@ const addToCart = (product) => {
                                 class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer ">
 
                                 <div class="bg-blue-700 p-2 rounded-full">
-                                    <a @click="addToCart(product)">
+                                    <a  @click="addToCart(product)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
                                             <path stroke-linecap="round" stroke-linejoin="round"

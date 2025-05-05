@@ -1,9 +1,12 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
+import {computed} from 'vue';
 
 const canLogin = usePage().props.canLogin;
 const canRegister = usePage().props.canRegister;
 const auth = usePage().props.auth;
+
+const cart = computed(() =>usePage().props.cart);
 
 
 
@@ -14,12 +17,12 @@ const auth = usePage().props.auth;
 
     <nav class="bg-white border-gray-200 dark:bg-gray-900">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-            <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <Link :href="route('home')" class="flex items-center space-x-3 rtl:space-x-reverse">
                 <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">SR Shop</span>
-            </a>
+            </Link>
             <div v-if="canLogin" class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
                 <div class="mr-4">
-                    <Link
+                    <Link :href="route('cart.view')"
                         class="relative inline-flex items-center p-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6 ">
@@ -29,7 +32,8 @@ const auth = usePage().props.auth;
                     <span class="sr-only">cart</span>
                     <div
                         class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-2 -right-2 dark:border-gray-900">
-                       80</div>
+                       
+                       {{ cart.data.count }}</div>
                     </Link>
 
 
