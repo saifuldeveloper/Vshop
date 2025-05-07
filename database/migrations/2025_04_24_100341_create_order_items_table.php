@@ -13,10 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
-            $table->id(); 
-            $table->foreignIdFor(User::class, 'user_id');
+            $table->id();
+            $table->foreignId('order_id')->references('id')->on('orders');
             $table->foreignId('product_id')->references('id')->on('products');
-            $table->integer('quantity');;
+            $table->integer('quantity');
+            $table->decimal('unit_price');
             $table->timestamps();
         });
     }

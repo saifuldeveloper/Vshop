@@ -18,9 +18,10 @@ return new class extends Migration
             $table->decimal('total_price', 20, 2);
             $table->string('status', 45);
             $table->string('session_id', 255);
-            // $table->foreignIdFor(UserAddress::class)->constrained();
+            $table->foreignIdFor(User::class, 'user_address_id')->nullable();
             $table->foreignIdFor(User::class, 'created_by')->nullable();
             $table->foreignIdFor(User::class, 'updated_by')->nullable();
+            $table->timestamps();
         });
     }
 

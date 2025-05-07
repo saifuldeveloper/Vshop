@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed,reactive  } from 'vue';
 import UserLayouts from './Layouts/UserLayouts.vue';
 
 import { router, usePage } from '@inertiajs/vue3';
@@ -16,6 +16,26 @@ const total = computed(() => usePage().props.cart.data.total)
 const itemId = (id) => carts.value.findIndex((item) => item.product_id === id);
 
 
+const form = reactive({
+    address1: null,
+    state: null,
+    city: null,
+    zipcode: null,
+    country_code: null,
+    type: null,
+
+})
+
+
+const formFilled = computed(()=>{
+   return (form.address1 !== null &&
+    form.state !== null &&
+    form.city !== null &&
+    form.zipcode !== null &&
+    form.country_code !== null &&
+    form.type !== null )
+})
+
 const update = (product, quantity) =>
     router.patch(route('cart.update', product), {
         quantity,
@@ -24,6 +44,22 @@ const update = (product, quantity) =>
 
 //remove form cart 
 const remove = (product) => router.delete(route('cart.delete', product));
+
+
+// confirm order
+
+function submit(){
+    router.visit(route('checkout.store'), {
+        method: 'post',
+        data: {
+            carts: usePage().props.cart.data.items,
+            products: usePage().props.cart.data.products,
+            total: usePage().props.cart.data.total,
+            address: form
+        }
+    })
+
+}
 
 </script>
 
@@ -116,56 +152,58 @@ const remove = (product) => router.delete(route('cart.delete', product));
                     <h2 class="text-gray-900 text-lg mb-1 font-medium title-font">Summary</h2>
                     <p class="leading-relaxed mb-5 text-gray-600">Total : $ 344</p>
 
-                    <div>
+                    <div v-if="userAddress">
                         <h2 class="text-gray-900 text-lg mb-1 font-medium title-font">Shipping Address</h2>
-                        <p class="leading-relaxed mb-5 text-gray-600">Mirpur DOHS House :966</p>
+                        <p class="leading-relaxed mb-5 text-gray-600">{{ userAddress.address1 }} , {{ userAddress.city }}, {{
+                            userAddress.zipcode }}</p>
                         <p class="leading-relaxed mb-5 text-gray-600">or you can add new below</p>
 
                     </div>
-                    <div>
-                        <p class="leading-relaxed mb-5 text-gray-600"> Add shipping address to continue</p>
-                    </div>
+
+                  <div v-else>
+                    <p class="leading-relaxed mb-5 text-gray-600"> Add shipping address to continue</p>
+                  </div>
 
 
 
-                    <form>
+                    <form @submit.prevent="submit">
                         <div class="relative mb-4">
                             <label for="name" class="leading-7 text-sm text-gray-600">Address 1</label>
-                            <input type="text" id="name" name="address1"
+                            <input type="text" id="name" name="address1" v-model="form.address1"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
                         <div class="relative mb-4">
                             <label for="email" class="leading-7 text-sm text-gray-600">City</label>
-                            <input type="text" id="email" name="city"
+                            <input type="text" id="email" name="city"  v-model="form.city"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
                         <div class="relative mb-4">
                             <label for="email" class="leading-7 text-sm text-gray-600">State</label>
-                            <input type="text" id="email" name="state"
+                            <input type="text" id="email" name="state"  v-model="form.state"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
                         <div class="relative mb-4">
                             <label for="email" class="leading-7 text-sm text-gray-600">Zipcode</label>
-                            <input type="text" id="email" name="zipcode"
+                            <input type="text" id="email" name="zipcode"  v-model="form.zipcode"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
                         <div class="relative mb-4">
                             <label for="email" class="leading-7 text-sm text-gray-600">Country Code</label>
-                            <input type="text" id="email" name="countrycode"
+                            <input type="text" id="email" name="countrycode"  v-model="form.country_code"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
                         <div class="relative mb-4">
                             <label for="email" class="leading-7 text-sm text-gray-600">Address type</label>
-                            <input type="text" id="email" name="type"
+                            <input type="text" id="email" name="type" v-model="form.type"
                                 class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
                         </div>
 
 
 
-                        <button type="submit"
+                        <button v-if="formFilled || userAddress" type="submit"
                             class="text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">Checkout</button>
 
-                        <button tpe="submit"
+                        <button v-else type="submit"
                             class="text-white bg-gray-500 border-0 py-2 px-6 focus:outline-none hover:bg-gray-600 rounded text-lg">Add
                             Address to continue</button>
 
