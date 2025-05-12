@@ -3,7 +3,10 @@
  import ProductList from './ProductList.vue';
 
  defineProps({
-    products:Array
+    products:{
+          type: Object,
+           required: true
+    },
  })
 
 

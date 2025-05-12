@@ -6,8 +6,18 @@ import { ElMessageBox } from 'element-plus'
 import { Plus, ZoomIn, Delete, Download, Edit } from '@element-plus/icons-vue'
 
 defineProps({
-    products: Array
+    products: {
+        type: Object,
+        required: true
+    },
 })
+
+
+const changePage = (url) => {
+    if (url) {
+        router.get(url);
+    }
+};
 const categories = usePage().props.categories;
 const brands = usePage().props.brands;
 
@@ -476,7 +486,8 @@ const deleteProduct = (product, index) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="product in products" :key="product.id" class="border-b dark:border-gray-700">
+                            <tr v-for="product in products.data" :key="product.id"
+                                class="border-b dark:border-gray-700">
                                 <th scope="row"
                                     class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ product.title }}
@@ -522,61 +533,71 @@ const deleteProduct = (product, index) => {
                         </tbody>
                     </table>
                 </div>
-                <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
-                    aria-label="Table navigation">
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                        Showing
-                        <span class="font-semibold text-gray-900 dark:text-white">1-10</span>
-                        of
-                        <span class="font-semibold text-gray-900 dark:text-white">1000</span>
-                    </span>
-                    <ul class="inline-flex items-stretch -space-x-px">
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Previous</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">2</a>
-                        </li>
-                        <li>
-                            <a href="#" aria-current="page"
-                                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">3</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">...</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">100</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Next</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+
+
+                <!-- Pagination Controls -->
+                <!-- Pagination Controls -->
+                <div class="flex items-center justify-between mt-6 space-x-4">
+                    <!-- Previous Button -->
+                    <button @click="changePage(products.prev_page_url)" :disabled="!products.prev_page_url"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                        &laquo; Previous
+                    </button>
+
+                    <!-- Page Number Buttons -->
+                    <div class="flex items-center space-x-2">
+                        <!-- Show First Page -->
+                        <button v-if="products.current_page > 3" @click="changePage('?page=1')"
+                            class="px-4 py-2 text-sm font-medium bg-white text-blue-600 border border-blue-500 hover:bg-blue-100 rounded-lg">
+                            1
+                        </button>
+
+                        <!-- Show Second Page -->
+                        <button v-if="products.current_page > 3" @click="changePage('?page=2')"
+                            class="px-4 py-2 text-sm font-medium bg-white text-blue-600 border border-blue-500 hover:bg-blue-100 rounded-lg">
+                            2
+                        </button>
+
+                        <!-- Show Ellipsis (...) for the pages in the middle -->
+                        <span v-if="products.current_page > 4" class="text-sm text-gray-500">...</span>
+
+                        <!-- Current Page -->
+                        <button @click="changePage(`?page=${products.current_page}`)"
+                            class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg">
+                            {{ products.current_page }}
+                        </button>
+
+                        <!-- Show Ellipsis (...) for pages between current and last pages -->
+                        <span v-if="products.current_page < products.last_page - 3"
+                            class="text-sm text-gray-500">...</span>
+
+                        <!-- Show Second to Last Page -->
+                        <button v-if="products.current_page < products.last_page - 2"
+                            @click="changePage(`?page=${products.last_page - 1}`)"
+                            class="px-4 py-2 text-sm font-medium bg-white text-blue-600 border border-blue-500 hover:bg-blue-100 rounded-lg">
+                            {{ products.last_page - 1 }}
+                        </button>
+
+                        <!-- Show Last Page -->
+                        <button v-if="products.current_page < products.last_page - 1"
+                            @click="changePage(`?page=${products.last_page}`)"
+                            class="px-4 py-2 text-sm font-medium bg-white text-blue-600 border border-blue-500 hover:bg-blue-100 rounded-lg">
+                            {{ products.last_page }}
+                        </button>
+                    </div>
+
+                    <!-- Next Button -->
+                    <button @click="changePage(products.next_page_url)" :disabled="!products.next_page_url"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                        Next &raquo;
+                    </button>
+
+                    <!-- Total Count -->
+                    <span class="text-sm text-gray-700">Total: {{ products.total }} items</span>
+                </div>
+
+
+
             </div>
         </div>
     </section>
